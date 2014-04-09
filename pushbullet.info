@@ -1,1 +1,3 @@
-"name = Pushbullet" 
+name = "Pushbullet" 
+description = "Adds support for pushing messages to phones through the pushbullet.com service"
+version = "7.x-1.x-dev"
