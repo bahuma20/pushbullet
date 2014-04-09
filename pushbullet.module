@@ -1,0 +1,21 @@
+<?php
+/**
+ * @file
+ * A module that allows pushing message through pushbullet.com service
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function pushbullet_menu() {
+  $items = array();
+  $items['admin/config/services/pushbullet'] = array(
+    'title' => 'Pushbullet',
+    'description' => 'Configuration for Pushbullet module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pushbullet_config_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
