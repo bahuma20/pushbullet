@@ -17,6 +17,14 @@ function pushbullet_menu() {
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/config/services/pushbullet/test'] = array(
+    'title' => 'Pushbullet Test',
+    'description' => 'Testing Pushbullet module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pushbullet_test_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
   return $items;
 }
 
@@ -31,6 +39,24 @@ function pushbullet_config_form($form, &$form_state) {
     '#title' => t('API-Key'),
     '#default_value' => variable_get('pushbullet_api_key'),
     '#description' => t('Get your API-Key at ').url('http://pushbullet.com'),
+    '#required' => TRUE,
+  );
+  return system_settings_form($form);
+}
+/**
+ * Page callback: Pushbullet settings
+ *
+ * @see pushbullet_menu()
+ */
+function pushbullet_test_form($form, &$form_state) {
+  $form['pushbullet_push_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#required' => TRUE,
+  );
+  $form['pushbullet_push_message'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Message'),
     '#required' => TRUE,
   );
   return system_settings_form($form);
