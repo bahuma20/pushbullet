@@ -5,7 +5,7 @@
  */
 
 /* INCLUDE THE LIBRARY */
-include ("PushBullet.class.php");
+module_load_include('inc', 'pushbullet', 'includes/pushbullet.class');
  
 /**
  * Implements hook_menu().
