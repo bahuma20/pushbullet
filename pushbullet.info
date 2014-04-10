@@ -1,6 +1,5 @@
 name = "Pushbullet" 
 description = "Adds support for pushing messages to phones through the pushbullet.com service"
 core = "7.x"
-version = "7.x-1.x-dev"
 
 configure = admin/config/services/pushbullet
