@@ -4,9 +4,13 @@
  * A module that allows pushing message through pushbullet.com service
  */
 
+/* INCLUDE THE LIBRARY */
+include ("PushBullet.class.php");
+ 
 /**
  * Implements hook_menu().
  */
+ 
 function pushbullet_menu() {
   $items = array();
   $items['admin/config/services/pushbullet'] = array(
@@ -59,5 +63,25 @@ function pushbullet_test_form($form, &$form_state) {
     '#title' => t('Message'),
     '#required' => TRUE,
   );
-  return system_settings_form($form);
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Push to my devices')
+  );
+  return $form;
 }
+
+function pushbullet_test_form_submit($form, &$form_state) {
+	drupal_set_message($form_state['values']['pushbullet_push_title']);
+	drupal_set_message($form_state['values']['pushbullet_push_message']);
+	
+	try {
+		
+		$p = new PushBullet(variable_get('pushbullet_api_key'));
+		$p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
+		
+	} catch (PushBulletException $e) {
+		drupal_set_message($e->getMessage(), 'error');
+	}
+	
+}
+	
