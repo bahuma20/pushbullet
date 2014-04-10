@@ -259,7 +259,7 @@ class PushbulletPushBullet {
     }
     elseif (is_array($push_to)) {
       // Push to multiple devices in an array.
-      /* Check if the device ID is in the list of devices 
+      /* Check if the device ID is in the list of devices
       we have permissions to push to.*/
       $failed_devices = array();
       foreach ($push_to as $device) {
