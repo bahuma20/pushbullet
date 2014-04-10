@@ -78,17 +78,13 @@ function pushbullet_form($form, &$form_state) {
   return $form;
 }
 
-function pushbullet_form_submit($form, &$form_state) {
-	drupal_set_message($form_state['values']['pushbullet_push_title']);
-	drupal_set_message($form_state['values']['pushbullet_push_message']);
-	
+function pushbullet_form_submit($form, &$form_state) {	
 	try {
-		
 		$p = new PushBullet(variable_get('pushbullet_api_key'));
 		$p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
-		
+		drupal_set_message(t('Your message was pushed'), 'status');
 	} catch (PushBulletException $e) {
-		drupal_set_message($e->getMessage(), 'error');
+		drupal_set_message("<b>".t("An error occured: ")."</b>".$e->getMessage(), 'error');
 	}
 	
 }
