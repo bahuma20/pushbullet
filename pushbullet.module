@@ -78,6 +78,9 @@ function pushbullet_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Pushing messages
+ */
 function pushbullet_form_submit($form, &$form_state) {	
 	try {
 		$p = new PushBullet(variable_get('pushbullet_api_key'));

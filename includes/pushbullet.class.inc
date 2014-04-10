@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Library from https://github.com/ivkos/PushBullet-for-PHP
+ * Class for pushbullet in PHP
  */
 
 class PushBulletException extends Exception {
