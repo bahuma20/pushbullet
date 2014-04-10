@@ -15,19 +15,27 @@ function pushbullet_menu() {
   $items = array();
   $items['admin/config/services/pushbullet'] = array(
     'title' => 'Pushbullet',
-    'description' => 'Configuration for Pushbullet module',
+    'description' => 'Pushing messages',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('pushbullet_config_form'),
+    'page arguments' => array('pushbullet_form'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/config/services/pushbullet/test'] = array(
-    'title' => 'Pushbullet Test',
-    'description' => 'Testing Pushbullet module',
+  $items['admin/config/services/pushbullet/push'] = array(
+    'title' => 'Push',
+    'description' => 'Pushing messages',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('pushbullet_test_form'),
+    'page arguments' => array('pushbullet_form'),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/config/services/pushbullet/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Configuration for the pushbullet module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pushbullet_config_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
 }
@@ -52,7 +60,7 @@ function pushbullet_config_form($form, &$form_state) {
  *
  * @see pushbullet_menu()
  */
-function pushbullet_test_form($form, &$form_state) {
+function pushbullet_form($form, &$form_state) {
   $form['pushbullet_push_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
@@ -70,7 +78,7 @@ function pushbullet_test_form($form, &$form_state) {
   return $form;
 }
 
-function pushbullet_test_form_submit($form, &$form_state) {
+function pushbullet_form_submit($form, &$form_state) {
 	drupal_set_message($form_state['values']['pushbullet_push_title']);
 	drupal_set_message($form_state['values']['pushbullet_push_message']);
 	
