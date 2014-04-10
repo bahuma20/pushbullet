@@ -83,10 +83,10 @@ function pushbullet_form($form, &$form_state) {
  */
 function pushbullet_form_submit($form, &$form_state) {	
 	try {
-		$p = new push_bullet(variable_get('pushbullet_api_key'));
+		$p = new PushBullet(variable_get('pushbullet_api_key'));
 		$p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
 		drupal_set_message(t('Your message was pushed'), 'status');
-	} catch (push_bullet_exception $e) {
+	} catch (PushBulletException $e) {
 		drupal_set_message("<b>".t("An error occurred: ")."</b>".$e->get_message(), 'error');
 	}
 	
