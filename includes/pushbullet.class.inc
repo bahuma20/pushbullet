@@ -51,7 +51,7 @@ class PushbulletPushBullet {
     }
 
     if ($this->_all_devices) {
-      $this->_my_devices = $this->_all_devices['devices'];
+      $this->myDevices = $this->_all_devices['devices'];
       $this->_shared_devices = $this->_all_devices['shared_devices'];
     }
     else {
@@ -70,7 +70,7 @@ class PushbulletPushBullet {
    * Gets my devices.
    */
   public function getMyDevices() {
-    return $this->_my_devices;
+    return $this->myDevices;
   }
 
   /**
@@ -119,8 +119,8 @@ class PushbulletPushBullet {
   const API_HOST = 'https://api.pushbullet.com/api';
   protected $apiKey;
   protected $allDevices;
-  protected $my_devices;
-  protected $shared_devices;
+  protected $myDevices;
+  protected $sharedDevices;
 
   protected $pushBulletErrors = array(
     400 => '400 Bad Request. Missing a required parameter.',
@@ -176,7 +176,7 @@ class PushbulletPushBullet {
         }
         elseif (empty($secondary)) {
           /* PushBullet accepts absolutely empty to-do lists,
-		  but there's no point.*/
+          but there's no point.*/
           throw new PushbulletPushBulletException('List: No items supplied.');
         }
 
@@ -259,7 +259,8 @@ class PushbulletPushBullet {
     }
     elseif (is_array($push_to)) {
       // Push to multiple devices in an array.
-      // Check if the device ID is in the list of devices we have permissions to push to.
+      /* Check if the device ID is in the list of devices 
+      we have permissions to push to.*/
       $failed_devices = array();
       foreach ($push_to as $device) {
         if ($this->inArray($device, $this->_all_devices)) {
@@ -276,12 +277,12 @@ class PushbulletPushBullet {
     }
     elseif ($push_to == 'all' || $push_to == 'my' || $push_to == 'shared') {
       // Push to my devices, if any.
-      if (($push_to == 'all' || $push_to == 'my') && !empty($this->_my_devices)) {
-        foreach ($this->_my_devices as $my_device) {
+      if (($push_to == 'all' || $push_to == 'my') && !empty($this->myDevices)) {
+        foreach ($this->myDevices as $my_device) {
           $this->buildCurlQuery($my_device['iden'], $push_type, $primary, $secondary);
         }
       }
-      elseif ($push_to == 'my' && empty($this->_my_devices)) {
+      elseif ($push_to == 'my' && empty($this->myDevices)) {
         throw new PushbulletPushBulletException('Push: No own devices found.');
       }
 

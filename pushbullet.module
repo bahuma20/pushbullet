@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * A module that allows pushing message through pushbullet.com service
+ * A module that allows pushing message through pushbullet.com service.
  */
 
 /* Include the pushbullet class. */
@@ -40,7 +40,7 @@ function pushbullet_menu() {
 }
 
 /**
- * Page callback: Pushbullet settings
+ * Page callback: Pushbullet settings.
  *
  * @see pushbullet_menu()
  */
@@ -55,7 +55,7 @@ function pushbullet_config_form($form, &$form_state) {
   return system_settings_form($form);
 }
 /**
- * Page callback: Pushbullet settings
+ * Page callback: Pushbullet settings.
  *
  * @see pushbullet_menu()
  */
@@ -72,22 +72,21 @@ function pushbullet_form($form, &$form_state) {
   );
   $form['submit_button'] = array(
     '#type' => 'submit',
-    '#value' => t('Push to my devices')
+    '#value' => t('Push to my devices'),
   );
   return $form;
 }
 
 /**
- * Pushing messages
+ * Pushing messages.
  */
-function pushbullet_form_submit($form, &$form_state) {	
+function pushbullet_form_submit($form, &$form_state) {
   try {
     $p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
     $p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
-      drupal_set_message(t('Your message was pushed'), 'status');
-    }
-    catch (PushbulletPushBulletException $e) {
-      drupal_set_message("<b>".t("An error occurred: ")."</b>".$e->getMessage(), 'error');
-    }
+    drupal_set_message(t('Your message was pushed'), 'status');
+  }
+  catch (PushbulletPushBulletException $e) {
+    drupal_set_message(t("<b>An error occurred:</b> @message", array('@message' => $e->getMessage())), 'error');
+  }
 }
-	
