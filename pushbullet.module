@@ -4,13 +4,12 @@
  * A module that allows pushing message through pushbullet.com service
  */
 
-/* INCLUDE THE LIBRARY */
+/* Include the pushbullet class. */
 module_load_include('inc', 'pushbullet', 'includes/pushbullet.class');
- 
+
 /**
  * Implements hook_menu().
  */
- 
 function pushbullet_menu() {
   $items = array();
   $items['admin/config/services/pushbullet'] = array(
@@ -30,7 +29,7 @@ function pushbullet_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['admin/config/services/pushbullet/settings'] = array(
-    'title' => 'Settings',
+    'title' => 'Pushbullet settings',
     'description' => 'Configuration for the pushbullet module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pushbullet_config_form'),
@@ -50,7 +49,7 @@ function pushbullet_config_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('API-Key'),
     '#default_value' => variable_get('pushbullet_api_key'),
-    '#description' => t('Get your API-Key at ').url('http://pushbullet.com'),
+    '#description' => t('Get your API-Key at @url', array('@url' => url('http://pushbullet.com'))),
     '#required' => TRUE,
   );
   return system_settings_form($form);
@@ -82,13 +81,13 @@ function pushbullet_form($form, &$form_state) {
  * Pushing messages
  */
 function pushbullet_form_submit($form, &$form_state) {	
-	try {
-		$p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
-		$p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
-		drupal_set_message(t('Your message was pushed'), 'status');
-	} catch (PushbulletPushBulletException $e) {
-		drupal_set_message("<b>".t("An error occurred: ")."</b>".$e->get_message(), 'error');
-	}
-	
+  try {
+    $p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
+    $p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
+      drupal_set_message(t('Your message was pushed'), 'status');
+    }
+    catch (PushbulletPushBulletException $e) {
+      drupal_set_message("<b>".t("An error occurred: ")."</b>".$e->getMessage(), 'error');
+    }
 }
 	
