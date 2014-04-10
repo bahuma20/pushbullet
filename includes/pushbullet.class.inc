@@ -4,11 +4,11 @@
  * Class for pushbullet in PHP.
  */
 
-class PushBulletException extends Exception {
+class PushbulletPushBulletException extends Exception {
   // Exception thrown by PushBullet.
 }
 
-class PushBullet {
+class PushbulletPushBullet {
   /**
    * Constructs a pushbullet object.
    */
@@ -36,14 +36,16 @@ class PushBullet {
     curl_close($curl);
 
     if ($http_code != 200) {
-      throw new PushBulletException('Unable to authenticate. HTTP Error ' 
+      throw new PushBulletException('Unable to authenticate. HTTP Error '
       . $this->_pushBulletErrors[$http_code]);
     }
 
-    // Check PHP version to determine whether a JSON big int workaround should be used.
+    /* Check PHP version to determine whether a JSON 
+      big int workaround should be used. */
     if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
       $this->_all_devices = json_decode($response, TRUE, 512, JSON_BIGINT_AS_STRING);
-    } else {
+    } 
+    else {
       $this->_all_devices = json_decode(preg_replace('/\"([a-zA-Z0-9_]+)\":\s?(\d{14,})/', 
       '"${1}":"${2}"', $response), TRUE);
     }
@@ -51,7 +53,8 @@ class PushBullet {
     if ($this->_all_devices) {
       $this->_my_devices = $this->_all_devices['devices'];
       $this->_shared_devices = $this->_all_devices['shared_devices'];
-    } else {
+    } 
+    else {
       throw new PushBulletException('Unable to decode JSON response.');
     }
   }
@@ -140,7 +143,8 @@ class PushBullet {
         if (empty($primary) && !empty($secondary)) {
           // PushBullet doesn't set a placeholder title if it's not supplied, so we have to.
           $primary = 'Note';
-        } elseif (empty($primary) && empty($secondary)) {
+        } 
+        elseif (empty($primary) && empty($secondary)) {
           throw new PushBulletException('Note: No title and body supplied.');
         }
 
@@ -251,14 +255,16 @@ class PushBullet {
 
     if (is_string($push_to) && $push_to != 'all' && $push_to != 'my' && $push_to != 'shared') {
       return $this->_build_curl_query($push_to, $push_type, $primary, $secondary);
-    } elseif (is_array($push_to)) {
+    }
+    elseif (is_array($push_to)) {
       // Push to multiple devices in an array.
       // Check if the device ID is in the list of devices we have permissions to push to.
       $failed_devices = array();
       foreach ($push_to as $device) {
         if ($this->inArray($device, $this->_all_devices)) {
           $this->_build_curl_query($device, $push_type, $primary, $secondary);
-        } else {
+        }
+        else {
           $failed_devices[] = $device;
         }
       }
@@ -266,7 +272,8 @@ class PushBullet {
       if (!empty($failed_devices)) {
         throw new PushBulletException('Push failed for devices: ' . implode(', ', $failed_devices));
       }
-    } elseif ($push_to == 'all' || $push_to == 'my' || $push_to == 'shared') {
+    }
+    elseif ($push_to == 'all' || $push_to == 'my' || $push_to == 'shared') {
       // Push to my devices, if any.
       if (($push_to == 'all' || $push_to == 'my') && !empty($this->_my_devices)) {
         foreach ($this->_my_devices as $myDevice) {
