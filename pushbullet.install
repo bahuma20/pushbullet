@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * Contains information about installing and uninstalling this module
+ * Contains information about installing and uninstalling this module.
  */
 
 
 /**
- * Uninstalling the module
+ * Uninstalling the module.
  */
 function pushbullet_uninstall() {
-     variable_del('pushbullet_api_key');
+  variable_del('pushbullet_api_key');
 }
