@@ -22,13 +22,8 @@ function pushbullet_menu() {
     'file' => 'includes/push_form.admin.inc',
   );
   $items['admin/config/services/pushbullet/push'] = array(
-    'title' => 'Push',
-    'description' => 'Pushing messages',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('pushbullet_push_form'),
-    'access arguments' => array('administer site configuration'),
+    'title' => 'Push message',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'file' => 'includes/push_form.admin.inc',
   );
   $items['admin/config/services/pushbullet/settings'] = array(
     'title' => 'Pushbullet settings',
