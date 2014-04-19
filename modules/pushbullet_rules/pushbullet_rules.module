@@ -1,4 +1,12 @@
 <?php
+/**
+ * @file
+ * Defines general functions.
+ */
+
+/**
+ * Implements hook_rules_action_info().
+ */
 function pushbullet_rules_rules_action_info() {
   return array(
     'pushbullet_rules_action_push_message' => array(
@@ -19,7 +27,10 @@ function pushbullet_rules_rules_action_info() {
   );
 }
 
-function pushbullet_rules_action_push_message ($title, $message) {
+/**
+ * Pushes a message when rule action is performed.
+ */
+function pushbullet_rules_action_push_message($title, $message) {
   pushbullet_push("note", array(
     'title' => $title,
     'message' => $message,

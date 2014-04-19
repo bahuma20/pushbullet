@@ -34,14 +34,17 @@ function pushbullet_menu() {
   return $items;
 }
 
+/**
+ * Pushes messages
+ */
 function pushbullet_push($type, $parameters) {
   /* Include the pushbullet class. */
   module_load_include('inc', 'pushbullet', 'includes/pushbullet.class');
-  
+
   try {
     $p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
     switch ($type) {
-      case "note" :
+      case "note":
         $p->pushNote('my', $parameters['title'], $parameters['message']);
         break;
     }
