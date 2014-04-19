@@ -35,10 +35,10 @@ function pushbullet_menu() {
 }
 
 /**
- * Pushes messages
+ * Pushes messages.
  */
 function pushbullet_push($type, $parameters) {
-  /* Include the pushbullet class. */
+  // Include the pushbullet class.
   module_load_include('inc', 'pushbullet', 'includes/pushbullet.class');
 
   try {
