@@ -1,0 +1,28 @@
+<?php
+function pushbullet_rules_rules_action_info() {
+  return array(
+    'pushbullet_rules_action_push_message' => array(
+      'label' => t('Push a message with Pushbullet'),
+      'group' => t('System'),
+      'parameter' => array(
+        'title' => array(
+          'type' => 'text',
+          'label' => t('Title of the message.'),
+        ),
+        'message' => array(
+          'type' => 'text',
+          'label' => t('The message to push.'),
+        ),
+      ),
+      'module' => 'pushbullet_rules',
+    ),
+  );
+}
+
+function pushbullet_rules_action_push_message ($title, $message) {
+  pushbullet_push("note", array(
+    'title' => $title,
+    'message' => $message,
+    )
+  );
+}

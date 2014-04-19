@@ -1,0 +1,6 @@
+name = "Pushbullet Rules" 
+description = "Provides rules for the pushbullet module"
+core = "7.x"
+
+dependencies[] = pushbullet
+dependencies[] = rules
