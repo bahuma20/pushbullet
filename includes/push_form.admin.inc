@@ -31,12 +31,9 @@ function pushbullet_push_form($form, &$form_state) {
  * Pushing messages.
  */
 function pushbullet_push_form_submit($form, &$form_state) {
-  try {
-    $p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
-    $p->pushNote('my', $form_state['values']['pushbullet_push_title'], $form_state['values']['pushbullet_push_message']);
-    drupal_set_message(t('Your message was pushed'), 'status');
-  }
-  catch (PushbulletPushBulletException $e) {
-    drupal_set_message(t("<b>An error occurred:</b> @message", array('@message' => $e->getMessage())), 'error');
-  }
+  pushbullet_push("note", array(
+    'title' => $form_state['values']['pushbullet_push_title'],
+    'message' => $form_state['values']['pushbullet_push_message'],
+    )
+  );
 }
