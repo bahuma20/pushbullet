@@ -4,318 +4,239 @@
  * Class for pushbullet in PHP.
  */
 
-class PushbulletPushBulletException extends Exception {
-  // Exception thrown by PushBullet.
-}
+class PushBullet {
+  private $_apiKey;
 
-class PushbulletPushBullet {
-  /**
-   * Constructs a pushbullet object.
-   */
-  public function __construct($secret) {
-    // Check if cURL is loaded.
+  const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
+  const URL_DEVICES        = 'https://api.pushbullet.com/v2/devices';
+  const URL_CONTACTS       = 'https://api.pushbullet.com/v2/contacts';
+  const URL_UPLOAD_REQUEST = 'https://api.pushbullet.com/v2/upload-request';
+  const URL_USERS          = 'https://api.pushbullet.com/v2/users';
+
+  public function __construct($apiKey)
+  {
+    $this->_apiKey = $apiKey;
+
     if (!function_exists('curl_init')) {
-      throw new PushbulletPushBulletException('cURL library is not loaded.');
-    }
-
-    $this->_api_key = $secret;
-
-    // Get all devices associated with the API key.
-    // This is also a more reliable way of API key validation.
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, self::API_HOST . '/devices');
-    curl_setopt($curl, CURLOPT_USERPWD, $this->_api_key);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-    $response = curl_exec($curl);
-
-    if ($response === FALSE) {
-      throw new PushbulletPushBulletException('cURL Error: ' . curl_error($curl));
-    }
-
-    $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
-    if ($http_code != 200) {
-      throw new PushbulletPushBulletException('Unable to authenticate. HTTP Error '
-      . $this->pushBulletErrors[$http_code]);
-    }
-
-    /* Check PHP version to determine whether a JSON
-    big int workaround should be used. */
-    if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-      $this->_all_devices = json_decode($response, TRUE, 512, JSON_BIGINT_AS_STRING);
-    }
-    else {
-      $this->_all_devices = json_decode(preg_replace('/\"([a-zA-Z0-9_]+)\":\s?(\d{14,})/',
-      '"${1}":"${2}"', $response), TRUE);
-    }
-
-    if ($this->_all_devices) {
-      $this->myDevices = $this->_all_devices['devices'];
-      $this->_shared_devices = $this->_all_devices['shared_devices'];
-    }
-    else {
-      throw new PushbulletPushBulletException('Unable to decode JSON response.');
+      throw new PushBulletException('cURL library is not loaded.');
     }
   }
 
-  /**
-   * Gets devices.
-   */
-  public function getDevices() {
-    return $this->_all_devices;
+  // Pushes
+
+  public function pushNote($recipient, $title, $body = NULL)
+  {
+    return $this->_push($recipient, 'note', $title, $body);
   }
 
-  /**
-   * Gets my devices.
-   */
-  public function getMyDevices() {
-    return $this->myDevices;
+  public function pushLink($recipient, $title, $url, $body = NULL)
+  {
+    return $this->_push($recipient, 'link', $title, $body);
   }
 
-  /**
-   * Gets shared devices.
-   */
-  public function getSharedDevices() {
-    return $this->_shared_devices;
+  public function pushAddress($recipient, $name, $address)
+  {
+    return $this->_push($recipient, 'address', $name, $address);
   }
 
-  /**
-   * Pushes a note.
-   */
-  public function pushNote($devices, $title, $body) {
-    return $this->push($devices, 'note', $title, $body);
+  public function pushList($recipient, $title, $items)
+  {
+    return $this->_push($recipient, 'list', $title, $items);
   }
 
-  /**
-   * Pushes an address.
-   */
-  public function pushAddress($devices, $name, $address) {
-    return $this->push($devices, 'address', $name, $address);
+  public function pushFile($recipient, $filePath, $mimeType = NULL)
+  {
+    return $this->_push($recipient, 'file', $filePath, $mimeType);
   }
 
-  /**
-   * Pushes a list.
-   */
-  public function pushList($devices, $title, $items) {
-    return $this->push($devices, 'list', $title, $items);
+  public function getPushHistory($modifiedAfter = 0, $cursor = NULL)
+  {
+    $data = array();
+    $data['modified_after'] = $modifiedAfter;
+
+    if ($cursor !== NULL) {
+      $data['cursor'] = $cursor;
+    }
+
+    return $this->_curlRequest(self::URL_PUSHES, 'GET', $data);
   }
 
-  /**
-   * Pushes a file.
-   */
-  public function pushFile($devices, $file_name) {
-    return $this->push($devices, 'file', $file_name, NULL);
+  public function deletePush($pushIden)
+  {
+    return $this->_curlRequest(URL_PUSHES . '/' . $pushIden, 'DELETE');
   }
 
-  /**
-   * Pushes a link.
-   */
-  public function pushLink($devices, $title, $url) {
-    return $this->push($devices, 'link', $title, $url);
+  // Devices
+
+  public function getDevices()
+  {
+    return $this->_curlRequest(self::URL_DEVICES, 'GET');
+  }
+
+  public function deleteDevice($deviceIden)
+  {
+    return $this->_curlRequest(self::URL_DEVICES . '/' .
+      $deviceIden, 'DELETE');
+  }
+
+  // Contacts
+
+  public function getContacts()
+  {
+    return $this->_curlRequest(self::URL_CONTACTS, 'GET');
+  }
+
+  public function deleteContact($contectIden)
+  {
+    return $this->_curlRequest(self::URL_CONTACTS . '/' .
+      $contectIden, 'DELETE');
+  }
+
+  // Users
+
+  public function getUserInformation($user = 'me')
+  {
+    return $this->_curlRequest(self::URL_USERS . '/' . $user, 'GET');
   }
 
 
-  const API_HOST = 'https://api.pushbullet.com/api';
-  protected $apiKey;
-  protected $allDevices;
-  protected $myDevices;
-  protected $sharedDevices;
+  private function _push($recipient, $type, $arg1, $arg2 = NULL, $arg3 = NULL)
+  {
+    $queryData = array();
 
-  protected $pushBulletErrors = array(
-    400 => '400 Bad Request. Missing a required parameter.',
-    401 => '401 Unauthorized. No valid API key provided.',
-    402 => '402 Request Failed.',
-    403 => '403 Forbidden. The API key is not valid for that request.',
-    404 => '404 Not Found. The requested item doesn\'t exist.',
-    500 => '500 Internal Server Error.',
-    502 => '502 Bad Gateway.',
-    503 => '503 Service Unavailable.',
-    504 => '504 Gateway Timeout.',
-  );
+    if (!empty($recipient)) {
+      if (filter_var($recipient, FILTER_VALIDATE_EMAIL) !== FALSE) {
+        $queryData['email'] = $recipient;
+      } else {
+        $queryData['device_iden'] = $recipient;
+      }
+    }
 
-  /**
-   * Builds the curl query.
-   */
-  protected function buildCurlQuery($device_id, $type, $primary, $secondary) {
-    switch ($type) {
+    $queryData['type'] = $type;
+
+    switch($type) {
       case 'note':
-        if (empty($primary) && !empty($secondary)) {
-          // PushBullet doesn't set a placeholder title if it's not supplied.
-          $primary = 'Note';
-        }
-        elseif (empty($primary) && empty($secondary)) {
-          throw new PushbulletPushBulletException('Note: No title and body supplied.');
-        }
+        $queryData['title'] = $arg1;
+        $queryData['body']  = $arg2;
+      break;
 
-        $query_data = http_build_query(array(
-          'device_iden' => $device_id,
-          'type' => 'note',
-          'title' => $primary,
-          'body' => $secondary,
-        ));
-        break;
-
-      case 'address':
-        if (!$secondary) {
-          throw new PushbulletPushBulletException('Address: No address supplied.');
-        }
-
-        $query_data = http_build_query(array(
-          'device_iden' => $device_id,
-          'type' => 'address',
-          'name' => $primary,
-          'address' => $secondary,
-        ));
-        break;
-
-      case 'list':
-        if (empty($primary) && !empty($secondary)) {
-          // PushBullet doesn't set a placeholder title if it's not supplied.
-          $primary = 'List';
-        }
-        elseif (empty($secondary)) {
-          /* PushBullet accepts absolutely empty to-do lists,
-          but there's no point.*/
-          throw new PushbulletPushBulletException('List: No items supplied.');
-        }
-
-        $query_data = http_build_query(array(
-          'device_iden' => $device_id,
-          'type' => 'list',
-          'title' => $primary,
-          'items' => $secondary,
-        ));
-
-        // Remove array keys in square brackets.
-        $query_data = preg_replace('/%5B[0-9]+%5D/i', '', $query_data);
-        break;
-
-      case 'file':
-        $full_file_path = realpath($primary);
-
-        if (!is_readable($full_file_path)) {
-          throw new PushbulletPushBulletException('File: File does not exist or is unreadable.');
-        }
-
-        if (filesize($full_file_path) > 25 * 1024 * 1024) {
-          throw new PushbulletPushBulletException('File: File size exceeds 25 MB.');
-        }
-
-        $query_data = array(
-          'device_iden' => $device_id,
-          'type' => 'file',
-          'file' => '@' . $full_file_path . ';filename=' . basename($full_file_path),
-        );
-        break;
 
       case 'link':
-        if (empty($secondary)) {
-          throw new PushbulletPushBulletException('Link: No URL supplied.');
+        $queryData['title'] = $arg1;
+        $queryData['url']   = $arg2;
+
+        if ($arg3 !== NULL) {
+          $queryData['body'] = $arg3;
         }
-        $query_data = http_build_query(array(
-          'device_iden' => $device_id,
-          'type' => 'link',
-          'title' => $primary,
-          'url' => $secondary,
-        ));
+      break;
+
+
+      case 'address':
+        $queryData['name']    = $arg1;
+        $queryData['address'] = $arg2;
+      break;
+
+
+      case 'list':
+        $queryData['title'] = $arg1;
+        $queryData['items'] = $arg2;
+      break;
+
+
+      case 'file':
+        $fullFilePath = realpath($arg1);
+
+        if (!is_readable($fullFilePath)) {
+          throw new PushBulletException('File: File does not exist ' .
+            'or is unreadable.');
+        }
+
+        if (filesize($fullFilePath) > 25*1024*1024) {
+          throw new PushBulletException('File: File size exceeds 25 MB.');
+        }
+
+        $queryData['file_name'] = basename($fullFilePath);
+
+        // Try to guess the MIME type if the argument is NULL
+        if ($arg2 === NULL) {
+          $queryData['file_type'] = mime_content_type($fullFilePath);
+        } else {
+          $queryData['file_type'] = $arg2;
+        }
+
+        // Request authorization to upload a file
+        $response = $this->_curlRequest(self::URL_UPLOAD_REQUEST, 'GET',
+          $queryData);
+        $queryData['file_url'] = $response->file_url;
+
+        // Upload the file
+        $response->data->file = '@' . $fullFilePath;
+        $this->_curlRequest($response->upload_url, 'POST', $response->data,
+          FALSE, FALSE);
+      break;
+
+      default:
+        throw new PushBulletException('Unknown push type.');
     }
 
+    return $this->_curlRequest(self::URL_PUSHES, 'POST', $queryData);
+  }
+
+
+  private function _curlRequest($url, $method, $data = NULL,
+    $sendAsJSON = TRUE, $auth = TRUE)
+  {
     $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, self::API_HOST . '/pushes');
-    curl_setopt($curl, CURLOPT_USERPWD, $this->_api_key);
-    curl_setopt($curl, CURLOPT_POST, TRUE);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $query_data);
+
+    if ($method == 'GET' && $data !== NULL) {
+      $url .= '?' . http_build_query($data);
+    }
+
+    curl_setopt($curl, CURLOPT_URL, $url);
+
+    if ($auth) {
+      curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
+    }
+
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+
+    if ($method == 'POST' && $data !== NULL) {
+      if ($sendAsJSON) {
+        $data = json_encode($data);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+          'Content-Type: application/json',
+          'Content-Length: ' . strlen($data)
+        ));
+      }
+
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    }
+
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($curl, CURLOPT_HEADER, FALSE);
+
     $response = curl_exec($curl);
 
     if ($response === FALSE) {
-      throw new PushbulletPushBulletException('cURL Error: ' . curl_error($curl));
+      $curlError = curl_error($curl);
+      curl_close($curl);
+      throw new PushBulletException('cURL Error: ' . $curlError);
     }
 
-    $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+    if ($httpCode >= 400) {
+      curl_close($curl);
+      throw new PushBulletException('HTTP Error ' . $httpCode);
+    }
+
     curl_close($curl);
 
-    if ($http_code >= 400) {
-      throw new PushbulletPushBulletException('Push failed for device '
-      . $device_id
-      . '. HTTP Error '
-      . $this->pushBulletErrors[$http_code]);
-    }
-
-    return TRUE;
+    return json_decode($response);
   }
+}
 
-  /**
-   * Does the push.
-   */
-  protected function push($push_to, $push_type, $primary, $secondary) {
-    if (empty($this->_all_devices)) {
-      throw new PushbulletPushBulletException('Push: No devices found.');
-    }
-
-    if (is_string($push_to) && $push_to != 'all' && $push_to != 'my' && $push_to != 'shared') {
-      return $this->buildCurlQuery($push_to, $push_type, $primary, $secondary);
-    }
-    elseif (is_array($push_to)) {
-      // Push to multiple devices in an array.
-      /* Check if the device ID is in the list of devices
-      we have permissions to push to.*/
-      $failed_devices = array();
-      foreach ($push_to as $device) {
-        if ($this->inArray($device, $this->_all_devices)) {
-          $this->buildCurlQuery($device, $push_type, $primary, $secondary);
-        }
-        else {
-          $failed_devices[] = $device;
-        }
-      }
-
-      if (!empty($failed_devices)) {
-        throw new PushbulletPushBulletException('Push failed for devices: ' . implode(', ', $failed_devices));
-      }
-    }
-    elseif ($push_to == 'all' || $push_to == 'my' || $push_to == 'shared') {
-      // Push to my devices, if any.
-      if (($push_to == 'all' || $push_to == 'my') && !empty($this->myDevices)) {
-        foreach ($this->myDevices as $my_device) {
-          $this->buildCurlQuery($my_device['iden'], $push_type, $primary, $secondary);
-        }
-      }
-      elseif ($push_to == 'my' && empty($this->myDevices)) {
-        throw new PushbulletPushBulletException('Push: No own devices found.');
-      }
-
-      // Push to shared devices, if any.
-      if (($push_to == 'all' || $push_to == 'shared') && !empty($this->_shared_devices)) {
-        foreach ($this->_shared_devices as $shared_device) {
-          $this->buildCurlQuery($shared_device['iden'], $push_type, $primary, $secondary);
-        }
-      }
-      elseif ($push_to == 'shared' && empty($this->_shared_devices)) {
-        throw new PushbulletPushBulletException('Push: No shared devices found.');
-      }
-    }
-    else {
-      throw new PushbulletPushBulletException('Push: Invalid device definition (' . $push_to . ').');
-    }
-
-    return TRUE;
-  }
-
-  /**
-   * Multidimensional in_array().
-   */
-  protected function inArray($needle, $haystack, $strict = FALSE) {
-    if (is_array($haystack)) {
-      foreach ($haystack as $item) {
-        if (($strict ? $item === $needle : $item == $needle) || (is_array($item) &&
-          $this->inArray($needle, $item, $strict))) {
-          return TRUE;
-        }
-      }
-    }
-
-    return FALSE;
-  }
+class PushBulletException extends Exception
+{
+  // Exception thrown by PushBullet
 }
