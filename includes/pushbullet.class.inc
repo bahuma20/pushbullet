@@ -120,7 +120,7 @@ class PushbulletPushBullet {
   /**
    * Processing the push.
    */
-  private function push($recipient, $type, $arg1, $arg2 = NULL, $arg3 = NULL) {
+  protected function push($recipient, $type, $arg1, $arg2 = NULL, $arg3 = NULL) {
     $query_data = array();
 
     if (!empty($recipient)) {
@@ -137,7 +137,7 @@ class PushbulletPushBullet {
       case 'note':
         $query_data['title'] = $arg1;
         $query_data['body']  = $arg2;
-      break;
+        break;
 
       case 'link':
         $query_data['title'] = $arg1;
@@ -146,17 +146,17 @@ class PushbulletPushBullet {
         if ($arg3 !== NULL) {
           $query_data['body'] = $arg3;
         }
-      break;
+        break;
 
       case 'address':
         $query_data['name']    = $arg1;
         $query_data['address'] = $arg2;
-      break;
+        break;
 
       case 'list':
         $query_data['title'] = $arg1;
         $query_data['items'] = $arg2;
-      break;
+        break;
 
       case 'file':
         $full_file_path = realpath($arg1);
@@ -185,11 +185,11 @@ class PushbulletPushBullet {
           $query_data);
         $query_data['file_url'] = $response->file_url;
 
-        // Upload the file
+        // Upload the file.
         $response->data->file = '@' . $full_file_path;
         $this->curlRequest($response->upload_url, 'POST', $response->data,
           FALSE, FALSE);
-      break;
+        break;
 
       default:
         throw new PushbulletPushBulletException('Unknown push type.');
@@ -199,7 +199,7 @@ class PushbulletPushBullet {
   }
 
   /**
-   * Makes a curl request
+   * Makes a curl request.
    */
   protected function curlRequest($url, $method, $data = NULL,
     $send_as_json = TRUE, $auth = TRUE) {
