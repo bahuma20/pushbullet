@@ -126,7 +126,8 @@ class PushbulletPushBullet {
     if (!empty($recipient)) {
       if (filter_var($recipient, FILTER_VALIDATE_EMAIL) !== FALSE) {
         $query_data['email'] = $recipient;
-      } else {
+      }
+      else {
         $query_data['device_iden'] = $recipient;
       }
     }
