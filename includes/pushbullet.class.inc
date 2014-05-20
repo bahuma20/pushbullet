@@ -4,8 +4,8 @@
  * Class for pushbullet in PHP.
  */
 
-class PushBullet {
-  private $_apiKey;
+class PushbulletPushBullet {
+  protected $api_key;
 
   const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
   const URL_DEVICES        = 'https://api.pushbullet.com/v2/devices';
@@ -13,179 +13,199 @@ class PushBullet {
   const URL_UPLOAD_REQUEST = 'https://api.pushbullet.com/v2/upload-request';
   const URL_USERS          = 'https://api.pushbullet.com/v2/users';
 
-  public function __construct($apiKey)
-  {
-    $this->_apiKey = $apiKey;
+  /**
+   * Creates the PushBullet object.
+   */
+  public function __construct($api_key) {
+    $this->api_key = $api_key;
 
     if (!function_exists('curl_init')) {
-      throw new PushBulletException('cURL library is not loaded.');
+      throw new PushbulletPushBulletException('cURL library is not loaded.');
     }
   }
 
-  // Pushes
-
-  public function pushNote($recipient, $title, $body = NULL)
-  {
-    return $this->_push($recipient, 'note', $title, $body);
+  /**
+   * Pushes a note.
+   */
+  public function pushNote($recipient, $title, $body = NULL) {
+    return $this->push($recipient, 'note', $title, $body);
   }
 
-  public function pushLink($recipient, $title, $url, $body = NULL)
-  {
-    return $this->_push($recipient, 'link', $title, $body);
+  /**
+   * Pushes a link.
+   */
+  public function pushLink($recipient, $title, $url, $body = NULL) {
+    return $this->push($recipient, 'link', $title, $body);
   }
 
-  public function pushAddress($recipient, $name, $address)
-  {
-    return $this->_push($recipient, 'address', $name, $address);
+  /**
+   * Pushes an adress.
+   */
+  public function pushAddress($recipient, $name, $address) {
+    return $this->push($recipient, 'address', $name, $address);
   }
 
-  public function pushList($recipient, $title, $items)
-  {
-    return $this->_push($recipient, 'list', $title, $items);
+  /**
+   * Pushes a list.
+   */
+  public function pushList($recipient, $title, $items) {
+    return $this->push($recipient, 'list', $title, $items);
   }
 
-  public function pushFile($recipient, $filePath, $mimeType = NULL)
-  {
-    return $this->_push($recipient, 'file', $filePath, $mimeType);
+  /**
+   * Pushes a file.
+   */
+  public function pushFile($recipient, $filePath, $mime_type = NULL) {
+    return $this->push($recipient, 'file', $filePath, $mime_type);
   }
 
-  public function getPushHistory($modifiedAfter = 0, $cursor = NULL)
-  {
+  /**
+   * Gets the push history.
+   */
+  public function getPushHistory($modified_after = 0, $cursor = NULL) {
     $data = array();
-    $data['modified_after'] = $modifiedAfter;
+    $data['modified_after'] = $modified_after;
 
     if ($cursor !== NULL) {
       $data['cursor'] = $cursor;
     }
 
-    return $this->_curlRequest(self::URL_PUSHES, 'GET', $data);
+    return $this->curl_request(self::URL_PUSHES, 'GET', $data);
   }
 
-  public function deletePush($pushIden)
-  {
-    return $this->_curlRequest(URL_PUSHES . '/' . $pushIden, 'DELETE');
+  /**
+   * Deletes a push.
+   */
+  public function deletePush($push_iden) {
+    return $this->curl_request(URL_PUSHES . '/' . $push_iden, 'DELETE');
   }
 
-  // Devices
-
-  public function getDevices()
-  {
-    return $this->_curlRequest(self::URL_DEVICES, 'GET');
+  /**
+   * Gets devices.
+   */
+  public function getDevices() {
+    return $this->curl_request(self::URL_DEVICES, 'GET');
   }
 
-  public function deleteDevice($deviceIden)
-  {
-    return $this->_curlRequest(self::URL_DEVICES . '/' .
-      $deviceIden, 'DELETE');
+  /**
+   * Deletes a device.
+   */
+  public function deleteDevice($device_iden) {
+    return $this->curl_request(self::URL_DEVICES . '/' .
+      $device_iden, 'DELETE');
   }
 
-  // Contacts
-
-  public function getContacts()
-  {
-    return $this->_curlRequest(self::URL_CONTACTS, 'GET');
+  /**
+   * Gets contacts.
+   */
+  public function getContacts() {
+    return $this->curl_request(self::URL_CONTACTS, 'GET');
   }
 
-  public function deleteContact($contectIden)
-  {
-    return $this->_curlRequest(self::URL_CONTACTS . '/' .
-      $contectIden, 'DELETE');
+  /**
+   * Deletes a contact.
+   */
+  public function deleteContact($contact_iden) {
+    return $this->curl_request(self::URL_CONTACTS . '/' .
+      $contact_iden, 'DELETE');
   }
 
-  // Users
-
-  public function getUserInformation($user = 'me')
-  {
-    return $this->_curlRequest(self::URL_USERS . '/' . $user, 'GET');
+  /**
+   * Gets information about the user.
+   */
+  public function getUserInformation($user = 'me') {
+    return $this->curl_request(self::URL_USERS . '/' . $user, 'GET');
   }
 
-
-  private function _push($recipient, $type, $arg1, $arg2 = NULL, $arg3 = NULL)
-  {
-    $queryData = array();
+  /**
+   * Processing the push.
+   */
+  private function push($recipient, $type, $arg1, $arg2 = NULL, $arg3 = NULL) {
+    $query_data = array();
 
     if (!empty($recipient)) {
       if (filter_var($recipient, FILTER_VALIDATE_EMAIL) !== FALSE) {
-        $queryData['email'] = $recipient;
+        $query_data['email'] = $recipient;
       } else {
-        $queryData['device_iden'] = $recipient;
+        $query_data['device_iden'] = $recipient;
       }
     }
 
-    $queryData['type'] = $type;
+    $query_data['type'] = $type;
 
     switch($type) {
       case 'note':
-        $queryData['title'] = $arg1;
-        $queryData['body']  = $arg2;
+        $query_data['title'] = $arg1;
+        $query_data['body']  = $arg2;
       break;
 
 
       case 'link':
-        $queryData['title'] = $arg1;
-        $queryData['url']   = $arg2;
+        $query_data['title'] = $arg1;
+        $query_data['url']   = $arg2;
 
         if ($arg3 !== NULL) {
-          $queryData['body'] = $arg3;
+          $query_data['body'] = $arg3;
         }
       break;
 
 
       case 'address':
-        $queryData['name']    = $arg1;
-        $queryData['address'] = $arg2;
+        $query_data['name']    = $arg1;
+        $query_data['address'] = $arg2;
       break;
 
 
       case 'list':
-        $queryData['title'] = $arg1;
-        $queryData['items'] = $arg2;
+        $query_data['title'] = $arg1;
+        $query_data['items'] = $arg2;
       break;
 
 
       case 'file':
-        $fullFilePath = realpath($arg1);
+        $full_file_path = realpath($arg1);
 
-        if (!is_readable($fullFilePath)) {
-          throw new PushBulletException('File: File does not exist ' .
+        if (!is_readable($full_file_path)) {
+          throw new PushbulletPushBulletException('File: File does not exist ' .
             'or is unreadable.');
         }
 
-        if (filesize($fullFilePath) > 25*1024*1024) {
-          throw new PushBulletException('File: File size exceeds 25 MB.');
+        if (filesize($full_file_path) > 25*1024*1024) {
+          throw new PushbulletPushBulletException('File: File size exceeds 25 MB.');
         }
 
-        $queryData['file_name'] = basename($fullFilePath);
+        $query_data['file_name'] = basename($full_file_path);
 
-        // Try to guess the MIME type if the argument is NULL
+        // Try to guess the MIME type if the argument is NULL.
         if ($arg2 === NULL) {
-          $queryData['file_type'] = mime_content_type($fullFilePath);
+          $query_data['file_type'] = mime_content_type($full_file_path);
         } else {
-          $queryData['file_type'] = $arg2;
+          $query_data['file_type'] = $arg2;
         }
 
-        // Request authorization to upload a file
-        $response = $this->_curlRequest(self::URL_UPLOAD_REQUEST, 'GET',
-          $queryData);
-        $queryData['file_url'] = $response->file_url;
+        // Request authorization to upload a file.
+        $response = $this->curl_request(self::URL_UPLOAD_REQUEST, 'GET',
+          $query_data);
+        $query_data['file_url'] = $response->file_url;
 
         // Upload the file
-        $response->data->file = '@' . $fullFilePath;
-        $this->_curlRequest($response->upload_url, 'POST', $response->data,
+        $response->data->file = '@' . $full_file_path;
+        $this->curl_request($response->upload_url, 'POST', $response->data,
           FALSE, FALSE);
       break;
 
       default:
-        throw new PushBulletException('Unknown push type.');
+        throw new PushbulletPushBulletException('Unknown push type.');
     }
 
-    return $this->_curlRequest(self::URL_PUSHES, 'POST', $queryData);
+    return $this->curl_request(self::URL_PUSHES, 'POST', $query_data);
   }
 
-
-  private function _curlRequest($url, $method, $data = NULL,
-    $sendAsJSON = TRUE, $auth = TRUE)
-  {
+  /**
+   * Makes a curl request
+   */
+  private function curl_request($url, $method, $data = NULL,
+    $send_as_json = TRUE, $auth = TRUE) {
     $curl = curl_init();
 
     if ($method == 'GET' && $data !== NULL) {
@@ -195,13 +215,13 @@ class PushBullet {
     curl_setopt($curl, CURLOPT_URL, $url);
 
     if ($auth) {
-      curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
+      curl_setopt($curl, CURLOPT_USERPWD, $this->api_key);
     }
 
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
 
     if ($method == 'POST' && $data !== NULL) {
-      if ($sendAsJSON) {
+      if ($send_as_json) {
         $data = json_encode($data);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
           'Content-Type: application/json',
@@ -220,14 +240,14 @@ class PushBullet {
     if ($response === FALSE) {
       $curlError = curl_error($curl);
       curl_close($curl);
-      throw new PushBulletException('cURL Error: ' . $curlError);
+      throw new PushbulletPushBulletException('cURL Error: ' . $curlError);
     }
 
-    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-    if ($httpCode >= 400) {
+    if ($http_code >= 400) {
       curl_close($curl);
-      throw new PushBulletException('HTTP Error ' . $httpCode);
+      throw new PushbulletPushBulletException('HTTP Error ' . $http_code);
     }
 
     curl_close($curl);
@@ -236,7 +256,6 @@ class PushBullet {
   }
 }
 
-class PushBulletException extends Exception
-{
-  // Exception thrown by PushBullet
+class PushbulletPushBulletException extends Exception {
+  // Exception thrown by PushBullet.
 }
