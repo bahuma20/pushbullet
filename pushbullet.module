@@ -45,7 +45,7 @@ function pushbullet_push($type, $parameters) {
     $p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
     switch ($type) {
       case "note":
-        $p->pushNote('my', $parameters['title'], $parameters['message']);
+        $p->pushNote(NULL, $parameters['title'], $parameters['message']);
         break;
     }
     drupal_set_message(t('A message was pushed to your devices'), 'status');
