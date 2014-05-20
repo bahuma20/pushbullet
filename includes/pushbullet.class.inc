@@ -5,7 +5,7 @@
  */
 
 class PushbulletPushBullet {
-  protected $api_key;
+  protected $apiKey;
 
   const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
   const URL_DEVICES        = 'https://api.pushbullet.com/v2/devices';
@@ -17,7 +17,7 @@ class PushbulletPushBullet {
    * Creates the PushBullet object.
    */
   public function __construct($api_key) {
-    $this->api_key = $api_key;
+    $this->apiKey = $api_key;
 
     if (!function_exists('curl_init')) {
       throw new PushbulletPushBulletException('cURL library is not loaded.');
@@ -39,7 +39,7 @@ class PushbulletPushBullet {
   }
 
   /**
-   * Pushes an adress.
+   * Pushes an address.
    */
   public function pushAddress($recipient, $name, $address) {
     return $this->push($recipient, 'address', $name, $address);
@@ -55,8 +55,8 @@ class PushbulletPushBullet {
   /**
    * Pushes a file.
    */
-  public function pushFile($recipient, $filePath, $mime_type = NULL) {
-    return $this->push($recipient, 'file', $filePath, $mime_type);
+  public function pushFile($recipient, $file_path, $mime_type = NULL) {
+    return $this->push($recipient, 'file', $file_path, $mime_type);
   }
 
   /**
@@ -70,28 +70,28 @@ class PushbulletPushBullet {
       $data['cursor'] = $cursor;
     }
 
-    return $this->curl_request(self::URL_PUSHES, 'GET', $data);
+    return $this->curlRequest(self::URL_PUSHES, 'GET', $data);
   }
 
   /**
    * Deletes a push.
    */
   public function deletePush($push_iden) {
-    return $this->curl_request(URL_PUSHES . '/' . $push_iden, 'DELETE');
+    return $this->curlRequest(URL_PUSHES . '/' . $push_iden, 'DELETE');
   }
 
   /**
    * Gets devices.
    */
   public function getDevices() {
-    return $this->curl_request(self::URL_DEVICES, 'GET');
+    return $this->curlRequest(self::URL_DEVICES, 'GET');
   }
 
   /**
    * Deletes a device.
    */
   public function deleteDevice($device_iden) {
-    return $this->curl_request(self::URL_DEVICES . '/' .
+    return $this->curlRequest(self::URL_DEVICES . '/' .
       $device_iden, 'DELETE');
   }
 
@@ -99,14 +99,14 @@ class PushbulletPushBullet {
    * Gets contacts.
    */
   public function getContacts() {
-    return $this->curl_request(self::URL_CONTACTS, 'GET');
+    return $this->curlRequest(self::URL_CONTACTS, 'GET');
   }
 
   /**
    * Deletes a contact.
    */
   public function deleteContact($contact_iden) {
-    return $this->curl_request(self::URL_CONTACTS . '/' .
+    return $this->curlRequest(self::URL_CONTACTS . '/' .
       $contact_iden, 'DELETE');
   }
 
@@ -114,7 +114,7 @@ class PushbulletPushBullet {
    * Gets information about the user.
    */
   public function getUserInformation($user = 'me') {
-    return $this->curl_request(self::URL_USERS . '/' . $user, 'GET');
+    return $this->curlRequest(self::URL_USERS . '/' . $user, 'GET');
   }
 
   /**
@@ -133,12 +133,11 @@ class PushbulletPushBullet {
 
     $query_data['type'] = $type;
 
-    switch($type) {
+    switch ($type) {
       case 'note':
         $query_data['title'] = $arg1;
         $query_data['body']  = $arg2;
       break;
-
 
       case 'link':
         $query_data['title'] = $arg1;
@@ -149,18 +148,15 @@ class PushbulletPushBullet {
         }
       break;
 
-
       case 'address':
         $query_data['name']    = $arg1;
         $query_data['address'] = $arg2;
       break;
 
-
       case 'list':
         $query_data['title'] = $arg1;
         $query_data['items'] = $arg2;
       break;
-
 
       case 'file':
         $full_file_path = realpath($arg1);
@@ -170,8 +166,8 @@ class PushbulletPushBullet {
             'or is unreadable.');
         }
 
-        if (filesize($full_file_path) > 25*1024*1024) {
-          throw new PushbulletPushBulletException('File: File size exceeds 25 MB.');
+        if (filesize($full_file_path) > 25 * 1024 * 1024) {
+          throw new PushbulletPushBulletException('File: File size exceeds 25 MiB.');
         }
 
         $query_data['file_name'] = basename($full_file_path);
@@ -179,18 +175,19 @@ class PushbulletPushBullet {
         // Try to guess the MIME type if the argument is NULL.
         if ($arg2 === NULL) {
           $query_data['file_type'] = mime_content_type($full_file_path);
-        } else {
+        }
+        else {
           $query_data['file_type'] = $arg2;
         }
 
         // Request authorization to upload a file.
-        $response = $this->curl_request(self::URL_UPLOAD_REQUEST, 'GET',
+        $response = $this->curlRequest(self::URL_UPLOAD_REQUEST, 'GET',
           $query_data);
         $query_data['file_url'] = $response->file_url;
 
         // Upload the file
         $response->data->file = '@' . $full_file_path;
-        $this->curl_request($response->upload_url, 'POST', $response->data,
+        $this->curlRequest($response->upload_url, 'POST', $response->data,
           FALSE, FALSE);
       break;
 
@@ -198,13 +195,13 @@ class PushbulletPushBullet {
         throw new PushbulletPushBulletException('Unknown push type.');
     }
 
-    return $this->curl_request(self::URL_PUSHES, 'POST', $query_data);
+    return $this->curlRequest(self::URL_PUSHES, 'POST', $query_data);
   }
 
   /**
    * Makes a curl request
    */
-  private function curl_request($url, $method, $data = NULL,
+  protected function curlRequest($url, $method, $data = NULL,
     $send_as_json = TRUE, $auth = TRUE) {
     $curl = curl_init();
 
@@ -215,7 +212,7 @@ class PushbulletPushBullet {
     curl_setopt($curl, CURLOPT_URL, $url);
 
     if ($auth) {
-      curl_setopt($curl, CURLOPT_USERPWD, $this->api_key);
+      curl_setopt($curl, CURLOPT_USERPWD, $this->apiKey);
     }
 
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
@@ -225,7 +222,7 @@ class PushbulletPushBullet {
         $data = json_encode($data);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
           'Content-Type: application/json',
-          'Content-Length: ' . strlen($data)
+          'Content-Length: ' . strlen($data),
         ));
       }
 
@@ -238,9 +235,9 @@ class PushbulletPushBullet {
     $response = curl_exec($curl);
 
     if ($response === FALSE) {
-      $curlError = curl_error($curl);
+      $curl_error = curl_error($curl);
       curl_close($curl);
-      throw new PushbulletPushBulletException('cURL Error: ' . $curlError);
+      throw new PushbulletPushBulletException('cURL Error: ' . $curl_error);
     }
 
     $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
