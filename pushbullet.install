@@ -5,16 +5,6 @@
  */
 
 /**
- * Installing the module.
- */
-function pushbullet_install() {
-  drupal_set_message(t('You have to set your API-Key for the Pushbullet module!<br>'
-    .'You can do this !url', array(
-      '!url' => l(t('here'), 'admin/config/services/pushbullet/settings')
-    )), 'warning', FALSE);
-}
-
-/**
  * Uninstalling the module.
  */
 function pushbullet_uninstall() {
