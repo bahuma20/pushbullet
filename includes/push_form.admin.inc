@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Functions for the push form
+ * Functions for the push form.
  */
 
 /**
@@ -10,7 +10,7 @@
  * @see pushbullet_menu()
  */
 function pushbullet_push_form($form, &$form_state) {
-  $form['pushbullet_type'] = array (
+  $form['pushbullet_type'] = array(
     '#type' => 'select',
     '#title' => t('Push type'),
     '#options' => array('note' => t('Note'), 'link' => t('Link')),

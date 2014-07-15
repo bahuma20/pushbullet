@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Functions for the admin form
+ * Functions for the admin form.
  */
 
 /**
