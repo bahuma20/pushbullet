@@ -14,7 +14,7 @@ function pushbullet_menu() {
     'description' => 'Pushing messages',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pushbullet_push_form'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('pushbullet push'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/push_form.admin.inc',
   );
@@ -27,7 +27,7 @@ function pushbullet_menu() {
     'description' => 'Configuration for the pushbullet module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pushbullet_config_form'),
-    'access arguments' => array('administer site configuration'),
+    'access arguments' => array('administer pushbullet'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/config_form.admin.inc',
   );
@@ -57,4 +57,21 @@ function pushbullet_push($type, $parameters) {
   catch (PushbulletPushBulletException $e) {
     drupal_set_message(t('An error occurred while pushing your messages: "@message"', array('@message' => $e->getMessage())), 'error');
   }
+}
+
+/**
+ * Implement permissions.
+ */
+function pushbullet_permission() {
+  return array(
+    'administer pushbullet' => array(
+      'title' => t('Administer Pushbullet'),
+      'description' => t('Allows users to set the API-Key'),
+      'restrict access' => TRUE,
+    ),
+    'pushbullet push' => array(
+      'title' => t('Push messages'),
+      'description' => t('Allows the user to push messages through the admin form'),
+    ),
+  );
 }
