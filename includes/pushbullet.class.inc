@@ -35,7 +35,7 @@ class PushbulletPushBullet {
    * Pushes a link.
    */
   public function pushLink($recipient, $title, $url, $body = NULL) {
-    return $this->push($recipient, 'link', $title, $body);
+    return $this->push($recipient, 'link', $title, $url, $body);
   }
 
   /**

@@ -47,6 +47,10 @@ function pushbullet_push($type, $parameters) {
       case "note":
         $p->pushNote(NULL, $parameters['title'], $parameters['message']);
         break;
+
+      case "link":
+        $p->pushLink(NULL, $parameters['title'], $parameters['url'], $parameters['message']);
+        break;
     }
     drupal_set_message(t('A message was pushed to your devices'), 'status');
   }
