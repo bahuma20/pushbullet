@@ -34,6 +34,9 @@ function pushbullet_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_libraries_info().
+ */
 function pushbullet_libraries_info() {
   $libraries['pushbullet'] = array(
     'name' => 'PushBullet-for-PHP',
@@ -45,7 +48,7 @@ function pushbullet_libraries_info() {
     ),
     'files' => array(
       'php' => array('PushBullet.class.php'),
-    )
+    ),
   );
 
   return $libraries;
@@ -74,10 +77,12 @@ function pushbullet_push($type, $parameters) {
       drupal_set_message(t('An error occurred while pushing your messages: "@message"', array('@message' => $e->getMessage())), 'error');
     }
   }
-  else
-  {
-    drupal_set_message("<pre>".print_r(libraries_detect("pushbullet"), true)."</pre>");
-    drupal_set_message(t("You have to install the PushBullet-for-PHP library"), 'warning');
+  else {
+    drupal_set_message(t("You have to install the PushBullet-for-PHP lib"
+      ."rary.<br>Download the library !url<br>Extract it and put all con"
+      ."tents of the PushBullet-for-PHP-master folder into sites/all/lib"
+      ."raries/pushbullet", array('!url' => l(t('here'), 'https://github'
+        .'.com/ivkos/PushBullet-for-PHP/archive/master.zip'))), 'warning');
   }
 }
 
