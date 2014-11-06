@@ -16,4 +16,4 @@ Configuration:
 Author
 ------
 Max Bachhuber
-max.bachhuber@bahuma-online.de
+max.bachhuber@bahuma.me
