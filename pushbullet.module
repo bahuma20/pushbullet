@@ -78,7 +78,7 @@ function pushbullet_push($type, $parameters) {
     }
   }
   else {
-    drupal_set_message(t("You have to install the PushBullet-for-PHP library.<br>Download the library !url<br>Extract it and put all contents of the PushBullet-for-PHP-master folder into sites/all/libraries/pushbullet", array('!url' => l(t('here'),'https://github.com/ivkos/PushBullet-for-PHP/archive/master.zip'))), 'warning');
+    drupal_set_message(t("You have to install the PushBullet-for-PHP library.<br/>Download the library !url<br/>Extract it and put all contents of the PushBullet-for-PHP-master folder into sites/all/libraries/pushbullet", array('!url' => l(t('here'), 'https://github.com/ivkos/PushBullet-for-PHP/archive/master.zip'))), 'warning');
   }
 }
 
