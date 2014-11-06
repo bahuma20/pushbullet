@@ -34,28 +34,50 @@ function pushbullet_menu() {
   return $items;
 }
 
+function pushbullet_libraries_info() {
+  $libraries['pushbullet'] = array(
+    'name' => 'PushBullet-for-PHP',
+    'vendor url' => 'https://github.com/ivkos/PushBullet-for-PHP',
+    'download url' => 'https://github.com/ivkos/PushBullet-for-PHP/archive/master.zip',
+    'version arguments' => array(
+      'file' => 'PushBullet.class.php',
+      'pattern' => '/\'https:\\/\\/api\\.pushbullet\\.com\\/([0-9a-zA-Z\.-]+)\\/pushes\'/is',
+    ),
+    'files' => array(
+      'php' => array('PushBullet.class.php'),
+    )
+  );
+
+  return $libraries;
+}
+
 /**
  * Pushes messages.
  */
 function pushbullet_push($type, $parameters) {
-  // Include the pushbullet class.
-  module_load_include('inc', 'pushbullet', 'includes/pushbullet.class');
 
-  try {
-    $p = new PushbulletPushBullet(variable_get('pushbullet_api_key'));
-    switch ($type) {
-      case "note":
-        $p->pushNote(NULL, $parameters['title'], $parameters['message']);
-        break;
+  if (($library = libraries_load("pushbullet")) && !empty($library['loaded'])) {
+    try {
+      $p = new PushBullet(variable_get('pushbullet_api_key'));
+      switch ($type) {
+        case "note":
+          $p->pushNote(NULL, $parameters['title'], $parameters['message']);
+          break;
 
-      case "link":
-        $p->pushLink(NULL, $parameters['title'], $parameters['url'], $parameters['message']);
-        break;
+        case "link":
+          $p->pushLink(NULL, $parameters['title'], $parameters['url'], $parameters['message']);
+          break;
+      }
+      drupal_set_message(t('A message was pushed to your devices'), 'status');
     }
-    drupal_set_message(t('A message was pushed to your devices'), 'status');
+    catch (PushBulletException $e) {
+      drupal_set_message(t('An error occurred while pushing your messages: "@message"', array('@message' => $e->getMessage())), 'error');
+    }
   }
-  catch (PushbulletPushBulletException $e) {
-    drupal_set_message(t('An error occurred while pushing your messages: "@message"', array('@message' => $e->getMessage())), 'error');
+  else
+  {
+    drupal_set_message("<pre>".print_r(libraries_detect("pushbullet"), true)."</pre>");
+    drupal_set_message(t("You have to install the PushBullet-for-PHP library"), 'warning');
   }
 }
 

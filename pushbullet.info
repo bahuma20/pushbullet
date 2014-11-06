@@ -2,4 +2,6 @@ name = "Pushbullet"
 description = "Adds support for pushing messages to phones through the pushbullet.com service"
 core = "7.x"
 
+dependencies[] = libraries (>=7.x-2.0)
+
 configure = admin/config/services/pushbullet
